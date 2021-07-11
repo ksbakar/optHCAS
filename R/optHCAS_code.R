@@ -61,7 +61,7 @@ runOpt <- function(design.matrix, coords, response=NULL,
       j <- j+1
       sample.size <- sample.size0 + increment.factor
       sample.size0 <- sample.size
-      newd <- run_fnc_opt(design.matrix=design.matrix,optSample=sample.size0,coords=coords,type=type,seed=seed)
+      newd <- run_fnc_opt(design.matrix=design.matrix,optSample=sample.size0,coords=coords,type=optType,seed=seed)
       if (unique(newd$flag)%in%0 | sample.size0 >= nrow(dat)){
         break
       }
@@ -151,7 +151,7 @@ runOpt <- function(design.matrix, coords, response=NULL,
           k <- k+1
           sample.size <- sample.size0 + increment.factor
           sample.size0 <- sample.size
-          newd0 <- run_fnc_opt(design.matrix=design.matrix,optSample=sample.size0,coords=coords,type=type,seed=seed)
+          newd0 <- run_fnc_opt(design.matrix=design.matrix,optSample=sample.size0,coords=coords,type=optType,seed=seed)
           cat(k)
           if (unique(newd0$flag)%in%0 | sample.size0 >= nrow(dat)){
             break
