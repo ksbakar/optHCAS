@@ -143,7 +143,7 @@ runOpt <- function(design.matrix, coords, response=NULL,
       }
       vall <- val0
       sample.size0 <- sample.size
-      newd0 <- run_fnc_opt(design.matrix=design.matrix,optSample=sample.size0,coords=coords,type=type,seed=seed)
+      newd0 <- run_fnc_opt(design.matrix=design.matrix,optSample=sample.size0,coords=coords,type=optType,seed=seed)
       ##
       k <- 0 
       if(unique(newd0$flag)%in%1){
