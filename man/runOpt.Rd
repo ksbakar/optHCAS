@@ -1,11 +1,11 @@
-\name{run}
-\alias{run}
-\title{Localised geostatistical implementation for identifying treatment dissimilarities in paddocks}
+\name{runOpt}
+\alias{runOpt}
+\title{Optimal pixel selection for HCAS}
 \description{
 This function is used to obtain co-kriging estimations based on a set of local methods. 
 }
 \usage{
-run(data = NULL, run.model = "FP", grid.input = NULL, cov.model = "Exp",
+runOpt(data = NULL, run.model = "FP", grid.input = NULL, cov.model = "Exp",
     neighbourhood.points = 50, random.seed=1234, ...)
 }
 \arguments{
