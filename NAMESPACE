@@ -1,7 +1,7 @@
 importFrom("graphics", "abline", "legend", "par", "points", "segments", "title", "pairs", "persp", "plot")
 importFrom("stats", "cor", "runif", "na.exclude", "na.omit", "na.pass", "sd", "var", "as.formula", "lm", "predict", "model.frame", "model.matrix", "model.response", "quantile", "terms", "terms.formula", "complete.cases", "weighted.mean")
 importFrom("utils", "txtProgressBar", "setTxtProgressBar")
-#importFrom("AlgDesign", "optFederov", "optMonteCarlo")
+importFrom("AlgDesign", "optFederov", "optMonteCarlo")
 S3method(plot,hcas)
 S3method(print,hcas)
 exportClasses("hcas")
