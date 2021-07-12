@@ -8,6 +8,6 @@ Maintainer: Shuvo Bakar <shuvo.bakar@csiro.au>
 Depends: R (>= 3.4.0)
 Description: An algorithm to select the optimal reference pixels for HCAS model with univariate and multivariate models.
 License: GPL (>= 2)
-Imports: graphics, stats, utils
+Imports: AlgDesign, graphics, stats, utils
 Encoding: UTF-8
 RoxygenNote: 7.1.1
