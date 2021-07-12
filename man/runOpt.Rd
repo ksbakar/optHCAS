@@ -5,28 +5,28 @@
 This function is used to obtain co-kriging estimations based on a set of local methods. 
 }
 \usage{
-runOpt(data = NULL, run.model = "FP", grid.input = NULL, cov.model = "Exp",
-    neighbourhood.points = 50, random.seed=1234, ...)
+runOpt(design.matrix, coords, response=NULL, initSampleSize = 10,
+       increment.factor = 5, threshold = 0.05, optType = "exact",
+       model = "univariate", weight.response = NULL, seed=1234)
 }
 \arguments{
-\item{data}{This argument is used to input data. The data set should be pre-processed into 4 columns. First two columns will represent x and y coordinates of the data points. Third column will represent the values, and the fourth column will represent the treatment index or name.}
-\item{run.model}{Can take input: 'AP': local adaptive based on points, 'FP': local fixed points.}
-\item{grid.input}{Prediction grids/locations.}
-\item{cov.model}{Covariance function for the spatial effects. The available options  are "Exp", "Sph" and "Gau". Default option: "Exp".}
-\item{neighbourhood.points}{This argument is to input neighbourhood points for the 'FP' algorithm.}
-\item{random.seed}{User input of seed number. Default 1234.}
-\item{...}{Other optional inputs.}
+\item{design.matrix}{n x p in matrix/data format.}
+\item{coords}{n x 2 coordinates in matrix/data format.}
+\item{response}{n x q matrix, q = 1 if univariate.}
+\item{initSampleSize}{Number of initial samples.}
+\item{increment.factor}{Number of increments in each iteration.}
+\item{threshold}{Threshold value for convergence of the rate of change.}
+\item{optType}{Can take 2 arguments: (i) "exact" for exact algorithm and (ii) "montecarlo" for montecarlo algorithm.}
+\item{model}{Can take "univariate" or "multivariate".}
+\item{weight.response}{Optional for multivariate model prediction, if null then use equal weights for multivariate response.}
+\item{seed}{User input of seed number. Default 1234.}
 }
 \value{
-\item{kriged.output}{A data table with columns related to predictions: (1) tretments (2) differences (3) variances (4) covariances (5) z-values.}
-\item{est.parameters}{The cokriging parameters estimated from the localised models.}
-\item{est.sample}{Number of samples used for fitting the localised models.}
-\item{neighbourhood.points}{The number of neighbourhood points for each treatment.}
-\item{grid.coordinates}{A 2 column matrix of prediction grid points.}
-\item{model}{Returns the covariance model type.}
-\item{grid.size}{Applicable if grid.input=NULL is used.}
-\item{shapefile}{Applicable if grid.input is a shapefile.}
-\item{type}{Returns the model type as a name.}
+\item{model}{Model used in the algorithm.}
+\item{optType}{Algorithm type.}
+\item{coords}{Pixel coordinates.}
+\item{optCoords}{Optimal pixel coordinates.}
+\item{optID}{Optimal ID.}
 \item{comp.time}{Returns the computation time.}
 }
 \references{
@@ -62,38 +62,9 @@ out <- runOpt(design.matrix=x, coords=coords, response=c(response),
               seed=1234)
 out
 plot(out)
-
-
 ##
-
-library(sp); library(fields); library(spTimer); library(ggplot2)
-data(LanghorneCreek)
-dim(LanghorneCreek)
-head(LanghorneCreek)
-grid <- data.frame(spT.grid.coords(c(range(LanghorneCreek[,1])),c(range(LanghorneCreek[,2])),by=c(100,100)))
-p <- ggplot() + 
-  geom_point(data=grid,aes(x=X1,y=X2),pch="+") +
-  geom_point(data=LanghorneCreek,aes(x=east,y=north,color=treatment,shape=treatment)) +
-  labs(x="Easting",y="Northing",color="Treatment",shape="Treatment")
-p
-
-
-
-dat <- data.frame(sample=round(out.p$neighbourhood.points,2),out.p$grid.coordinates)
-dat <- dat[,c(2,3,1)]
-head(dat)
-library(raster); library(viridis)
-r <- rasterFromXYZ(dat)
-r.range <- c(floor(min(unlist(c(dat[,3])))),ceiling(max(unlist(c(dat[,3])))))
-plot(r,col=rev(viridis(100)),breaks=seq(from=r.range[1],to=r.range[2],length.out = 100),
-     main=paste0("Neighbourhood sample size"),
-     axis.args=list(at=seq(r.range[1], r.range[2], length.out=10),
-                    labels=round(seq(r.range[1], r.range[2],length.out=10)),
-                    cex.axis=2))
-contour(r, add=TRUE, lty=2)
-
 ##
 ######################################################
 }
 }
-\keyword{paTools}
+\keyword{hcas}
