@@ -209,16 +209,25 @@ runOpt <- function(design.matrix, coords, response=NULL,
       ##
     }
     ##
+    if(model%in%c("univariate")){
+      new.response <-response[newd$id]
+    }
+    if(model%in%c("multivariate")){
+      new.response <-response[newd$id,]
+    }
+    ##
     end.time <- proc.time()[3]
     t <- end.time-start.time
     comp.time <- .fnc.time_(t)
     if(isTRUE(store.para)){
       out <- list(model=model,optType=optType,coords=coords,optCoords=newd,
-                  optID=sort(newd$id),comp.time=comp.time,para.list=list.para)
+                  optID=sort(newd$id),new.design.matrix=design.matrix[newd$id,],
+                  new.response = new.response, comp.time=comp.time,para.list=list.para)
     }
     else{
       out <- list(model=model,optType=optType,coords=coords,optCoords=newd,
-                  optID=sort(newd$id),comp.time=comp.time)
+                  optID=sort(newd$id),new.design.matrix=design.matrix[newd$id,],
+                  new.response = new.response, comp.time=comp.time)
     }
     class(out) <- "hcas"
     out
@@ -231,7 +240,8 @@ runOpt <- function(design.matrix, coords, response=NULL,
     t <- end.time-start.time
     comp.time <- .fnc.time_(t)
     out <- list(model=model,optType=optType,coords=coords,optCoords=newd,
-                optID=sort(newd$id),comp.time=comp.time)
+                optID=sort(newd$id),new.design.matrix=design.matrix[newd$id,],
+                new.response = NULL, comp.time=comp.time)
     class(out) <- "hcas"
     out
   }
@@ -316,6 +326,8 @@ run_fnc_opt <- function(design.matrix,optSample,coords,type,seed){
 plot.hcas <- function(x, ...){
   plot(x$coords,pch="*",xlab="x",ylab="y")
   points(x$optCoords[,1:2], ...)
+  title(sub=paste0("Total observation: ",nrow(x$coords),
+                   ", Optimal sample: ",nrow(x$optCoords)))
 }
 ##
 ## print function
