@@ -11,11 +11,12 @@
 ##
 runOpt <- function(design.matrix, coords, response=NULL,
                    initSampleSize = 10,
-                   increment.factor = 5, 
+                   increment.factor = 5,
                    threshold = 0.05,
                    optType = "exact",
                    model = "univariate",
                    weight.response = NULL,
+                   store.para = TRUE,
                    seed=1234){
   ##
   ## design.matrix = n x p in matrix/data format
@@ -24,7 +25,7 @@ runOpt <- function(design.matrix, coords, response=NULL,
   ## initSampleSize = number of initial samples to select
   ## increment.factor = number of increments in each iteration
   ## threshold = threshold value for convergence of the rate of change
-  ## optType = can take 2 arguments: (i) "exact" for exact algorithm and (ii) "montecarlo" for montecarlo algorithm  
+  ## optType = can take 2 arguments: (i) "exact" for exact algorithm and (ii) "montecarlo" for montecarlo algorithm
   ## model = can take "univariate" or "multivariate"
   ## weight.response = optional for multivariate model prediction, if null then use equal weights for multivariate response
   ## seed = a random seed number to reporduce the results
@@ -49,7 +50,7 @@ runOpt <- function(design.matrix, coords, response=NULL,
     print(paste0("initSampleSize <= p; i.e.,",initSampleSize," <= ",p))
     print(paste0("initSampleSize is considered as: ",p+1))
   }
-  ## run a repeat loop 
+  ## run a repeat loop
   sample.size <- initSampleSize
   vall <- 0.00000001 # initial criteria for threshold
   j <- 0
@@ -111,14 +112,19 @@ runOpt <- function(design.matrix, coords, response=NULL,
     }
     ##
     if(model%in%c("univariate")){
-      val <- abs(cor(na.omit(cbind(dat[,yvar],pr)))[1,2])^2
+      dd <- na.omit(cbind(dat[,yvar],pr))
+      val <- abs(cor(dd)[1,2])^2
       val0 <- val
-    }  
+      val.para <- spT.validation(dd[,1],dd[,2])
+    }
     ##
     if(model%in%c("multivariate")){
       val <- c()
+      val.para <- list()
       for(k in 1:q){
-        val[k] <- abs(cor(na.omit(cbind(dat[,yvar[k]],pr[,k])))[1,2])^2
+        dd <- na.omit(cbind(dat[,yvar],pr))
+        val[k] <- abs(cor(dd)[1,2])^2
+        val.para[[k]] <- spT.validation(dd[,1],dd[,2])
       }
       if(!is.null(weight.response)){
         if(!length(weight.response)%in%q){
@@ -131,10 +137,11 @@ runOpt <- function(design.matrix, coords, response=NULL,
       }
     }
     ##
-    roc <- (val0-vall)/vall # rate of change 
+    roc <- (val0-vall)/vall # rate of change
     j <- 0
     #print(paste0("Initialisation: ",j,"; Rate of Change: ",round(roc,4)))
     #print(c(j,vall,val0,roc))
+    list.para <- list()
     repeat{
       j <- j+1
       sample.size <- sample.size0 + increment.factor
@@ -145,7 +152,7 @@ runOpt <- function(design.matrix, coords, response=NULL,
       sample.size0 <- sample.size
       newd0 <- run_fnc_opt(design.matrix=design.matrix,optSample=sample.size0,coords=coords,type=optType,seed=seed)
       ##
-      k <- 0 
+      k <- 0
       if(unique(newd0$flag)%in%1){
         repeat{
           k <- k+1
@@ -163,14 +170,19 @@ runOpt <- function(design.matrix, coords, response=NULL,
       pr <- predict(m, newdata = dat)
       ##
       if(model%in%c("univariate")){
-        val <- abs(cor(na.omit(cbind(dat[,yvar],pr)))[1,2])^2
+        dd <- na.omit(cbind(dat[,yvar],pr))
+        val <- abs(cor(dd)[1,2])^2
         val0 <- val
-      }  
+        val.para <- spT.validation(dd[,1],dd[,2])
+      }
       ##
       if(model%in%c("multivariate")){
         val <- c()
+        val.para <- list()
         for(k in 1:q){
-          val[k] <- abs(cor(na.omit(cbind(dat[,yvar[k]],pr[,k])))[1,2])^2
+          dd <- na.omit(cbind(dat[,yvar[k]],pr[,k]))
+          val[k] <- abs(cor(dd)[1,2])^2
+          val.para[[k]] <- spT.validation(dd[,1],dd[,2])
         }
         if(!is.null(weight.response)){
           if(!length(weight.response)%in%q){
@@ -183,12 +195,14 @@ runOpt <- function(design.matrix, coords, response=NULL,
         }
       }
       ##
-      roc <- (val0-vall)/vall # rate of change 
+      roc <- (val0-vall)/vall # rate of change
       ##
       #print(paste0("Itr: ",j,"; Rate of Change: ",round(roc,4)))
       #print(paste0("Itr: ",j,"; Rate of Change: ",round(roc,4),"; Sample: ",nrow(newd0)))
       print(paste0("Sample Size: ",nrow(newd0),"; Rate of Change: ",round(roc,4)))
       #print(paste("replication:",j,"pre-r2:",vall,"curr-r2:",val0,"roc:",roc))
+      list.para[[j]] <- list(roc=roc,pre_r2=vall,curr_r2=val0,other.para=val.para)
+      ##
       if (roc > threshold){
         newd <- newd0
       }
@@ -198,8 +212,14 @@ runOpt <- function(design.matrix, coords, response=NULL,
     end.time <- proc.time()[3]
     t <- end.time-start.time
     comp.time <- .fnc.time_(t)
-    out <- list(model=model,optType=optType,coords=coords,optCoords=newd,
-                optID=sort(newd$id),comp.time=comp.time)
+    if(isTRUE(store.para)){
+      out <- list(model=model,optType=optType,coords=coords,optCoords=newd,
+                  optID=sort(newd$id),comp.time=comp.time,para.list=list.para)
+    }
+    else{
+      out <- list(model=model,optType=optType,coords=coords,optCoords=newd,
+                  optID=sort(newd$id),comp.time=comp.time)
+    }
     class(out) <- "hcas"
     out
   }
@@ -224,16 +244,16 @@ run_fnc_opt <- function(design.matrix,optSample,coords,type,seed){
   ## design.matrix = n x p in matrix format
   ## optSample = number of samples to select
   ## seed = a random seed number to reporduce the results
-  ## type = can take 2 arguments: (i) "exact" for exact algorithm and (ii) "montecarlo" for montecarlo algorithm  
+  ## type = can take 2 arguments: (i) "exact" for exact algorithm and (ii) "montecarlo" for montecarlo algorithm
   ##
-  ## criterion = always "I" to represent predictive performance, see details in "AlgDesign" 
+  ## criterion = always "I" to represent predictive performance, see details in "AlgDesign"
   criterion = "I"
   ##
   n <- nrow(coords)
   if(nrow(coords)!=nrow(design.matrix)){
     stop("coords and design.matrix should have same number of rows.\n")
   }
-  ##  
+  ##
   set.seed(seed)
   if(type=="exact"){
     out <- try(optFederov(data = as.matrix(design.matrix), nTrials = optSample, criterion=criterion), TRUE)
@@ -298,7 +318,7 @@ plot.hcas <- function(x, ...){
   points(x$optCoords[,1:2], ...)
 }
 ##
-## print function 
+## print function
 ##
 print.hcas <-function(x, ...){
   cat("-------------------------"); cat('\n');
@@ -316,11 +336,11 @@ print.hcas <-function(x, ...){
     t <- round(t,2)
     tt <- paste(t," - Sec.")
     cat(paste("##\n# Elapsed time:",t,"Sec.\n##\n"))
-  } 
+  }
   #
   if(t < (60*60) && t >= 60){
     t1 <- as.integer(t/60)
-    t <- round(t-t1*60,2) 
+    t <- round(t-t1*60,2)
     tt <- paste(t1," - Mins.",t," - Sec.")
     cat(paste("##\n# Elapsed time:",t1,"Min.",t,"Sec.\n##\n"))
   }
@@ -329,7 +349,7 @@ print.hcas <-function(x, ...){
     t2 <- as.integer(t/(60*60))
     t <- t-t2*60*60
     t1 <- as.integer(t/60)
-    t <- round(t-t1*60,2) 
+    t <- round(t-t1*60,2)
     tt <- paste(t2," - Hour/s.",t1," - Mins.",t," - Sec.")
     cat(paste("##\n# Elapsed time:",t2,"Hour/s.",t1,"Min.",t,"Sec.\n##\n"))
   }
