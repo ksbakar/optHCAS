@@ -2,12 +2,13 @@
 \alias{runOpt}
 \title{Optimal pixel selection for HCAS}
 \description{
-This function is used to obtain co-kriging estimations based on a set of local methods. 
+This function is used to obtain optimal sample size and position of geo-spatial locations/pixels. 
 }
 \usage{
 runOpt(design.matrix, coords, response=NULL, initSampleSize = 10,
        increment.factor = 5, threshold = 0.05, optType = "exact",
-       model = "univariate", weight.response = NULL, seed=1234)
+       model = "univariate", weight.response = NULL, store.para = TRUE,
+	   seed=1234)
 }
 \arguments{
 \item{design.matrix}{n x p in matrix/data format.}
@@ -19,6 +20,7 @@ runOpt(design.matrix, coords, response=NULL, initSampleSize = 10,
 \item{optType}{Can take 2 arguments: (i) "exact" for exact algorithm and (ii) "montecarlo" for montecarlo algorithm.}
 \item{model}{Can take "univariate" or "multivariate".}
 \item{weight.response}{Optional for multivariate model prediction, if null then use equal weights for multivariate response.}
+\item{store.para}{Store all validation parameters related to the algorithm. Default value is TRUE.}
 \item{seed}{User input of seed number. Default 1234.}
 }
 \value{
@@ -27,6 +29,8 @@ runOpt(design.matrix, coords, response=NULL, initSampleSize = 10,
 \item{coords}{Pixel coordinates.}
 \item{optCoords}{Optimal pixel coordinates.}
 \item{optID}{Optimal ID.}
+\item{new.design.matrix}{Design matrix based on the optimal samples.}
+\item{new.response}{Response based on the optimal samples. NULL if no response is used as input.}
 \item{comp.time}{Returns the computation time.}
 }
 \references{
