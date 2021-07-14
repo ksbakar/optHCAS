@@ -8,7 +8,7 @@ This function is used to obtain optimal sample size and position of geo-spatial 
 runOpt(design.matrix, coords, response=NULL, initSampleSize = 10,
        increment.factor = 5, threshold = 0.05, optType = "exact",
        model = "univariate", weight.response = NULL, store.para = TRUE,
-	   seed=1234)
+       seed=1234)
 }
 \arguments{
 \item{design.matrix}{n x p in matrix/data format.}
