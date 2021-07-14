@@ -34,6 +34,7 @@ runOpt <- function(design.matrix, coords, response=NULL,
   set.seed(seed)
   coords <- as.data.frame(coords)
   design.matrix <- as.data.frame(design.matrix)
+  backup <- design.matrix
   design.matrix <- data.frame(lapply(design.matrix, function(x) scale(x)))
   n <- nrow(coords)
   p <- ncol(design.matrix)
@@ -221,12 +222,12 @@ runOpt <- function(design.matrix, coords, response=NULL,
     comp.time <- .fnc.time_(t)
     if(isTRUE(store.para)){
       out <- list(model=model,optType=optType,coords=coords,optCoords=newd,
-                  optID=sort(newd$id),new.design.matrix=design.matrix[newd$id,],
+                  optID=sort(newd$id),new.design.matrix=backup[newd$id,],
                   new.response = new.response, comp.time=comp.time,para.list=list.para)
     }
     else{
       out <- list(model=model,optType=optType,coords=coords,optCoords=newd,
-                  optID=sort(newd$id),new.design.matrix=design.matrix[newd$id,],
+                  optID=sort(newd$id),new.design.matrix=backup[newd$id,],
                   new.response = new.response, comp.time=comp.time)
     }
     class(out) <- "hcas"
@@ -240,7 +241,7 @@ runOpt <- function(design.matrix, coords, response=NULL,
     t <- end.time-start.time
     comp.time <- .fnc.time_(t)
     out <- list(model=model,optType=optType,coords=coords,optCoords=newd,
-                optID=sort(newd$id),new.design.matrix=design.matrix[newd$id,],
+                optID=sort(newd$id),new.design.matrix=backup[newd$id,],
                 new.response = NULL, comp.time=comp.time)
     class(out) <- "hcas"
     out
